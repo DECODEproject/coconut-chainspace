@@ -1,4 +1,4 @@
-""" 
+"""
 	A simple smart contract illustarting an e-petition.
 """
 
@@ -13,7 +13,8 @@ from json    import dumps, loads
 from petlib.ecdsa import do_ecdsa_sign, do_ecdsa_verify
 # coconut
 from chainspacecontract.examples.utils import *
-from chainspacecontract.examples.petition_proofs import *
+from contracts.utils import *
+from contracts.petition_proofs import *
 from coconut.utils import *
 from coconut.scheme import *
 
@@ -41,7 +42,7 @@ def init():
 # create petition
 # ------------------------------------------------------------------
 @contract.method('create_petition')
-def create_petition(inputs, reference_inputs, parameters, UUID, options, priv_owner, pub_owner, 
+def create_petition(inputs, reference_inputs, parameters, UUID, options, priv_owner, pub_owner,
     t_owners, n_owners, aggr_vk):
     # inital score
     pet_params = pet_setup()
@@ -84,7 +85,7 @@ def create_petition(inputs, reference_inputs, parameters, UUID, options, priv_ow
 # ------------------------------------------------------------------
 @contract.method('sign')
 def sign(inputs, reference_inputs, parameters, priv_signer, sig, aggr_vk, vote):
-    # get petition and list 
+    # get petition and list
     old_petition = loads(inputs[0])
     new_petition = loads(inputs[0])
     old_list = loads(inputs[1])
@@ -99,10 +100,10 @@ def sign(inputs, reference_inputs, parameters, priv_signer, sig, aggr_vk, vote):
     # update spent list
     new_list['list'].append(pack(zeta))
 
-    # encrypt the votes 
+    # encrypt the votes
     pub_owner = unpack(old_petition['owner'])
     pet_params = pet_setup()
-    (enc_v, enc_v_not, cv, pi_vote) = make_proof_vote_petition(pet_params, pub_owner, vote) 
+    (enc_v, enc_v_not, cv, pi_vote) = make_proof_vote_petition(pet_params, pub_owner, vote)
     #assert verify_proof_vote_petition(pet_params, enc_v, pub_owner, cv, pi_vote)
 
     # update petition values
@@ -115,7 +116,7 @@ def sign(inputs, reference_inputs, parameters, priv_signer, sig, aggr_vk, vote):
     # return
     return {
         'outputs': (dumps(new_petition),dumps(new_list)),
-        'extra_parameters' : (pack(sigma), pack(kappa), pack(nu), pack(zeta), pack(pi_petition), 
+        'extra_parameters' : (pack(sigma), pack(kappa), pack(nu), pack(zeta), pack(pi_petition),
             pack(enc_v), pack(cv), pack(pi_vote))
     }
 
@@ -138,7 +139,7 @@ def tally(inputs, reference_inputs, parameters, tally_priv, index, t_owners):
     ## proof of correct decryption
     pi_tally = make_proof_tally_petition(pet_params, l[index], enc_results, tally_priv)
     #assert verify_proof_tally_petition(pet_params, l[index], enc_results, pi_tally, dec_share)
-    
+
     # return
     return {
         'outputs': (dumps(petition),),
@@ -192,11 +193,11 @@ def create_petition_checker(inputs, reference_inputs, parameters, outputs, retur
         # retrieve inputs
         petition = loads(outputs[1])
         spent_list = loads(outputs[2])
-        
+
 
         # check format
         if len(inputs) != 1 or len(reference_inputs) != 0 or len(outputs) != 3 or len(returns) != 0:
-            return False 
+            return False
 
         # check types
         if loads(inputs[0])['type'] != 'PToken' or loads(outputs[0])['type'] != 'PToken': return False
@@ -208,7 +209,7 @@ def create_petition_checker(inputs, reference_inputs, parameters, outputs, retur
         petition['t_owners'] # check presence of field
         petition['n_owners'] # check presence of field
         options = petition['options']
-        scores = petition['scores'] 
+        scores = petition['scores']
         pub_owner = unpack(petition['owner'])
         if len(options) < 1 or len(options) != len(scores): return False
 
@@ -256,13 +257,13 @@ def sign_checker(inputs, reference_inputs, parameters, outputs, returns, depende
         enc_v = unpack(parameters[5])
         cv = unpack(parameters[6])
         pi_vote = unpack(parameters[7])
-        
+
         # check format
         if len(inputs) != 2 or len(reference_inputs) != 0 or len(outputs) != 2 or len(returns) != 0:
-            return False 
+            return False
 
         # check types
-        if new_petition['type'] != 'PObject' or new_list['type'] != 'PList': return False      
+        if new_petition['type'] != 'PObject' or new_list['type'] != 'PList': return False
 
         # check format & consistency with old object
         UUID = unpack(new_petition['UUID'])
@@ -297,16 +298,16 @@ def sign_checker(inputs, reference_inputs, parameters, outputs, returns, depende
         packed_zeta = parameters[3]
         if (packed_zeta in old_list['list']) or (new_list['list'] != old_list['list'] + [packed_zeta]):
             return False
-        
+
         # verify coconut credentials
         aggr_vk = unpack(packed_vk)
-        if not verify_proof_credentials_petition(bp_params, aggr_vk, sig, kappa, nu, zeta, pi_petition, UUID): 
+        if not verify_proof_credentials_petition(bp_params, aggr_vk, sig, kappa, nu, zeta, pi_petition, UUID):
             return False
-  
+
         # otherwise
         return True
 
-    except (KeyError, Exception): 
+    except (KeyError, Exception):
         return False
 
 # ------------------------------------------------------------------
@@ -323,10 +324,10 @@ def tally_checker(inputs, reference_inputs, parameters, outputs, returns, depend
 
         # check format
         if len(inputs) != 1 or len(reference_inputs) != 0 or len(outputs) != 1 or len(returns) != 0:
-            return False 
+            return False
 
         # check types
-        if old_petition['type'] != new_petition['type']: return False 
+        if old_petition['type'] != new_petition['type']: return False
 
         # check fields consistency
         if old_petition['UUID'] != new_petition['UUID']: return False
@@ -334,12 +335,12 @@ def tally_checker(inputs, reference_inputs, parameters, outputs, returns, depend
         if old_petition['options'] != new_petition['options']: return False
         if old_petition['verifier'] != new_petition['verifier']: return False
         if old_petition['t_owners'] != new_petition['t_owners']: return False
-        if old_petition['n_owners'] != new_petition['n_owners']: return False 
-        if old_petition['scores'] != new_petition['scores']: return False 
+        if old_petition['n_owners'] != new_petition['n_owners']: return False
+        if old_petition['scores'] != new_petition['scores']: return False
 
         # check fields
         if new_petition['dec'] != old_petition['dec'] + [parameters[0]]: return False
-        
+
         ## verify proof of tally
         pet_params = pet_setup()
         (G, g, hs, o) = pet_params
@@ -351,7 +352,7 @@ def tally_checker(inputs, reference_inputs, parameters, outputs, returns, depend
         # otherwise
         return True
 
-    except (KeyError, Exception): 
+    except (KeyError, Exception):
         return False
 
 
@@ -363,12 +364,12 @@ def read_checker(inputs, reference_inputs, parameters, outputs, returns, depende
     try:
         # check format
         if len(inputs) != 0 or len(reference_inputs) != 1 or len(outputs) != 0 or len(returns) != 1:
-            return False 
+            return False
 
         # otherwise
         return True
 
-    except (KeyError, Exception): 
+    except (KeyError, Exception):
         return False
 
 

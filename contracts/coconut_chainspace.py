@@ -13,6 +13,7 @@ from petlib.bn import Bn
 from chainspacecontract import ChainspaceContract
 # coconut
 from chainspacecontract.examples.utils import *
+from contracts.utils import *
 from coconut.scheme import *
 from coconut.proofs import *
 
@@ -64,7 +65,7 @@ def create(inputs, reference_inputs, parameters, q, t, n, callback, aggr_vk):
 
 # ------------------------------------------------------------------
 # request
-# NOTE: 
+# NOTE:
 #	- args are the arguments for the callback
 # ------------------------------------------------------------------
 @contract.method('request')
@@ -157,20 +158,20 @@ def create_checker(inputs, reference_inputs, parameters, outputs, returns, depen
 
         # check format
         if len(inputs) != 1 or len(reference_inputs) != 0 or len(outputs) != 2 or len(returns) != 0:
-            return False 
+            return False
 
         # check types
         if inputs[0] != outputs[0]: return False
         if instance['type'] != 'CoCoInstance': return False
 
         # check fields
-        q = instance['q'] 
-        t = instance['t'] 
+        q = instance['q']
+        t = instance['t']
         n = instance['n']
         instance['callback']
         packed_vk = instance['verifier']
         if q < 1 or n < 1 or t > n: return False
-   
+
         # otherwise
         return True
 
@@ -189,7 +190,7 @@ def request_checker(inputs, reference_inputs, parameters, outputs, returns, depe
 
         # check format
         if len(inputs) != 1 or len(reference_inputs) != 0 or len(outputs) != 2 or len(returns) != 0:
-            return False 
+            return False
 
         # check types
         if request['type'] != 'CoCoRequest': return False
@@ -201,7 +202,7 @@ def request_checker(inputs, reference_inputs, parameters, outputs, returns, depe
         (cm, c, pi_s) = Lambda
         if inputs[0] != outputs[0] or loads(inputs[0]) != request['instance']: return False
         if request['sigs'] != [None] * instance['n']: return False
-        
+
         # optional: verify proof (could be done locally by each signer)
         gamma = unpack(request['gamma'])
         if not verify_pi_s(params, gamma, c, cm, pi_s): return False
@@ -233,7 +234,7 @@ def issue_checker(inputs, reference_inputs, parameters, outputs, returns, depend
 
         # check format
         if len(inputs) != 1 or len(reference_inputs) != 0 or len(outputs) != 1 or len(returns) != 0:
-            return False 
+            return False
 
         # check fields
         old_request['sigs'], new_request['sigs'] = None, None
@@ -244,7 +245,7 @@ def issue_checker(inputs, reference_inputs, parameters, outputs, returns, depend
         if new_sigs != old_sigs: return False
 
       	## We could verify the partial signature using the vk of each authority (to include in the 'instance' object). If we do so, the size of the object will increse linearly with the number of authorities. Otherwise we can off-load it to the client.
-      	
+
         # otherwise
         return True
 
@@ -262,7 +263,7 @@ def verify_checker(inputs, reference_inputs, parameters, outputs, returns, depen
 
         # check format
         if len(inputs) != 0 or len(reference_inputs) != 1 or len(outputs) != 0 or len(returns) != 1:
-            return False 
+            return False
 
         # verify signature
         params = setup(instance['q'])

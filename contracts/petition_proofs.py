@@ -59,7 +59,7 @@ def verify_proof_credentials_petition(params, aggr_vk, sigma, kappa, nu, zeta, p
 
 	## verify signature
 	# add clear text messages
-	aggr = G2Elem.inf(G) 
+	aggr = G2Elem.inf(G)
 	if len(public_m) != 0:
 		aggr = ec_sum([public_m[i]*beta[i+private_m_len] for i in range(len(public_m))])
 	# verify

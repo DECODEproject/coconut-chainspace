@@ -13,13 +13,14 @@ import unittest
 import requests
 # chainspace
 from chainspacecontract import transaction_to_solution
-from chainspacecontract.examples.auction import contract as auction_contract
-from chainspacecontract.examples import auction
+from contracts.auction import contract as auction_contract
+from contracts import auction
 # petlib
 from petlib.ecdsa import do_ecdsa_sign, do_ecdsa_verify
 from petlib.bn import Bn
 # coconut
 from chainspacecontract.examples.utils import *
+from contracts.utils import *
 from coconut.utils import *
 from coconut.scheme import *
 
@@ -183,14 +184,14 @@ class Test(unittest.TestCase):
                 bidders[1][0], # seq
                 bidders[1][2] # sigma
             )
-            
+
             ## submit transaction
             response = requests.post(
                 'http://127.0.0.1:5000/' + auction_contract.contract_name
                 + '/reveal', json=transaction_to_solution(transaction)
             )
             self.assertTrue(response.json()['success'])
-   
+
     # --------------------------------------------------------------
     # test withdraw
     # --------------------------------------------------------------
@@ -237,7 +238,7 @@ class Test(unittest.TestCase):
                     bidders[i][2] # sigma
                 )
                 auction_object = reveal_transaction['transaction']['outputs'][0]
-                    
+
             ## withdraw
             transaction = auction.withdraw(
                 (auction_object, ),
@@ -246,14 +247,14 @@ class Test(unittest.TestCase):
                 bidders[1][0], # seq
                 bidders[1][2] # sigma
             )
-            
+
             ## submit transaction
             response = requests.post(
                 'http://127.0.0.1:5000/' + auction_contract.contract_name
                 + '/withdraw', json=transaction_to_solution(transaction)
             )
             self.assertTrue(response.json()['success'])
-    
+
     # --------------------------------------------------------------
     # test submitWork
     # --------------------------------------------------------------
@@ -310,7 +311,7 @@ class Test(unittest.TestCase):
                 bidders[1][2] # sigma
             )
             auction_object = reveal_transaction['transaction']['outputs'][0]
-            
+
             ## submitWork
             transaction = auction.submitWork(
                 (auction_object, ),
@@ -327,7 +328,7 @@ class Test(unittest.TestCase):
             )
             self.assertTrue(response.json()['success'])
 
-            
+
 ####################################################################
 # main
 ###################################################################

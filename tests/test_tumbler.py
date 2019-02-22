@@ -13,13 +13,14 @@ import unittest
 import requests
 # chainspace
 from chainspacecontract import transaction_to_solution
-from chainspacecontract.examples.tumbler import contract as tumbler_contract
-from chainspacecontract.examples import tumbler
+from contracts.tumbler import contract as tumbler_contract
+from contracts import tumbler
 # petlib
 from petlib.ecdsa import do_ecdsa_sign, do_ecdsa_verify
 from petlib.bn import Bn
 # coconut
 from chainspacecontract.examples.utils import *
+from contracts.utils import *
 from coconut.utils import *
 from coconut.scheme import *
 
@@ -46,7 +47,7 @@ class Test(unittest.TestCase):
 
             ## submit transaction
             response = requests.post(
-                'http://127.0.0.1:5000/' + tumbler_contract.contract_name 
+                'http://127.0.0.1:5000/' + tumbler_contract.contract_name
                 + '/init', json=transaction_to_solution(transaction)
             )
             self.assertTrue(response.json()['success'])
@@ -99,7 +100,7 @@ class Test(unittest.TestCase):
 
             # some crypto
             # ------------------------------------
-            ID = 10 # sequence number embedded in the credentials  
+            ID = 10 # sequence number embedded in the credentials
             addr = 100 # merchant address
             (d, gamma) = elgamal_keygen(bp_params)
             private_m = [ID, addr]
@@ -121,12 +122,12 @@ class Test(unittest.TestCase):
 
             ## submit transaction
             response = requests.post(
-                'http://127.0.0.1:5000/' + tumbler_contract.contract_name 
+                'http://127.0.0.1:5000/' + tumbler_contract.contract_name
                 + '/redeem', json=transaction_to_solution(transaction)
             )
             self.assertTrue(response.json()['success'])
 
-   
+
 ####################################################################
 # main
 ###################################################################

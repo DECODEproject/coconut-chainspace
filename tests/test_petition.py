@@ -11,13 +11,14 @@ import unittest
 import requests
 # chainspace
 from chainspacecontract import transaction_to_solution
-from chainspacecontract.examples.petition import contract as petition_contract
-from chainspacecontract.examples import petition
+from contracts.petition import contract as petition_contract
+from contracts import petition
 # petlib
 from petlib.ecdsa import do_ecdsa_sign, do_ecdsa_verify
 from petlib.bn import Bn
 # coconut
 from chainspacecontract.examples.utils import *
+from contracts.utils import *
 from coconut.utils import *
 from coconut.scheme import *
 
@@ -57,7 +58,7 @@ class Test(unittest.TestCase):
 
             ## submit transaction
             response = requests.post(
-                'http://127.0.0.1:5000/' + petition_contract.contract_name 
+                'http://127.0.0.1:5000/' + petition_contract.contract_name
                 + '/init', json=transaction_to_solution(transaction)
             )
             self.assertTrue(response.json()['success'])
@@ -90,12 +91,12 @@ class Test(unittest.TestCase):
 
             ## submit transaction
             response = requests.post(
-                'http://127.0.0.1:5000/' + petition_contract.contract_name 
+                'http://127.0.0.1:5000/' + petition_contract.contract_name
                 + '/create_petition', json=transaction_to_solution(transaction)
             )
             self.assertTrue(response.json()['success'])
 
- 
+
     # --------------------------------------------------------------
     # test sign
     # --------------------------------------------------------------
@@ -145,7 +146,7 @@ class Test(unittest.TestCase):
 
             ## submit transaction
             response = requests.post(
-                'http://127.0.0.1:5000/' + petition_contract.contract_name 
+                'http://127.0.0.1:5000/' + petition_contract.contract_name
                 + '/sign', json=transaction_to_solution(transaction)
             )
             self.assertTrue(response.json()['success'])
@@ -215,7 +216,7 @@ class Test(unittest.TestCase):
 
             ## submit transaction
             response = requests.post(
-                'http://127.0.0.1:5000/' + petition_contract.contract_name 
+                'http://127.0.0.1:5000/' + petition_contract.contract_name
                 + '/tally', json=transaction_to_solution(transaction)
             )
             self.assertTrue(response.json()['success'])
@@ -293,7 +294,7 @@ class Test(unittest.TestCase):
 
             ## submit transaction
             response = requests.post(
-                'http://127.0.0.1:5000/' + petition_contract.contract_name 
+                'http://127.0.0.1:5000/' + petition_contract.contract_name
                 + '/read', json=transaction_to_solution(transaction)
             )
             self.assertTrue(response.json()['success'])
@@ -302,7 +303,7 @@ class Test(unittest.TestCase):
             print('OUTCOME: ', loads(transaction['transaction']['returns'][0]))
             print("\n===================================================\n\n")
 
-   
+
 ####################################################################
 # main
 ###################################################################

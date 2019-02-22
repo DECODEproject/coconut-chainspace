@@ -15,10 +15,11 @@ import requests
 from petlib.bn import Bn
 # chainspace
 from chainspacecontract import transaction_to_solution
-from chainspacecontract.examples.coconut_chainspace import contract as coconut_contract
-from chainspacecontract.examples import coconut_chainspace
+from contracts.coconut_chainspace import contract as coconut_contract
+from contracts import coconut_chainspace
 # coconut
 from chainspacecontract.examples.utils import *
+from contracts.utils import *
 from coconut.utils import *
 from coconut.scheme import *
 
@@ -31,7 +32,7 @@ callback = 'hello.init' # id of the callback contract
 params = setup(q) # system's parameters
 public_m = [1, 2] # messages for plaintext signature
 private_m = [3, 4, 5] # messages for blind signature
-(d, gamma) = elgamal_keygen(params) # user's key pair 
+(d, gamma) = elgamal_keygen(params) # user's key pair
 (sk, vk) = ttp_keygen(params, t, n) # signers keys
 aggr_vk = agg_key(params, vk, threshold=True)
 
@@ -48,7 +49,7 @@ class Test(unittest.TestCase):
 
             ## submit transaction
             response = requests.post(
-                'http://127.0.0.1:5000/' + coconut_contract.contract_name 
+                'http://127.0.0.1:5000/' + coconut_contract.contract_name
                 + '/init', json=transaction_to_solution(transaction)
             )
             self.assertTrue(response.json()['success'])
@@ -70,13 +71,13 @@ class Test(unittest.TestCase):
                 q,
                 t,
                 n,
-                callback, 
+                callback,
                 aggr_vk,
             )
 
             ## submit transaction
             response = requests.post(
-                'http://127.0.0.1:5000/' + coconut_contract.contract_name 
+                'http://127.0.0.1:5000/' + coconut_contract.contract_name
                 + '/create', json=transaction_to_solution(transaction)
             )
             self.assertTrue(response.json()['success'])
@@ -98,7 +99,7 @@ class Test(unittest.TestCase):
                 q,
                 t,
                 n,
-                callback, 
+                callback,
                 aggr_vk,
             )
             instance = create_transaction['transaction']['outputs'][1]
@@ -107,14 +108,14 @@ class Test(unittest.TestCase):
                 (instance,),
                 None,
                 None,
-                public_m, 
-                private_m, 
+                public_m,
+                private_m,
                 gamma
             )
 
             ## submit transaction
             response = requests.post(
-                'http://127.0.0.1:5000/' + coconut_contract.contract_name 
+                'http://127.0.0.1:5000/' + coconut_contract.contract_name
                 + '/request', json=transaction_to_solution(transaction)
             )
             self.assertTrue(response.json()['success'])
@@ -136,7 +137,7 @@ class Test(unittest.TestCase):
                 q,
                 t,
                 n,
-                callback, 
+                callback,
                 aggr_vk,
             )
             instance = create_transaction['transaction']['outputs'][1]
@@ -145,8 +146,8 @@ class Test(unittest.TestCase):
                 (instance,),
                 None,
                 None,
-                public_m, 
-                private_m, 
+                public_m,
+                private_m,
                 gamma
             )
             old_request = request_transaction['transaction']['outputs'][1]
@@ -162,7 +163,7 @@ class Test(unittest.TestCase):
 
             ## submit transaction
             response = requests.post(
-                'http://127.0.0.1:5000/' + coconut_contract.contract_name 
+                'http://127.0.0.1:5000/' + coconut_contract.contract_name
                 + '/issue', json=transaction_to_solution(transaction)
             )
             self.assertTrue(response.json()['success'])
@@ -206,7 +207,7 @@ class Test(unittest.TestCase):
                 q,
                 t,
                 n,
-                callback, 
+                callback,
                 aggr_vk,
             )
             instance = create_transaction['transaction']['outputs'][1]
@@ -215,8 +216,8 @@ class Test(unittest.TestCase):
                 (instance,),
                 None,
                 None,
-                public_m, 
-                private_m, 
+                public_m,
+                private_m,
                 gamma
             )
             old_request = request_transaction['transaction']['outputs'][1]
@@ -232,7 +233,7 @@ class Test(unittest.TestCase):
 
             ## submit transaction
             response = requests.post(
-                'http://127.0.0.1:5000/' + coconut_contract.contract_name 
+                'http://127.0.0.1:5000/' + coconut_contract.contract_name
                 + '/issue', json=transaction_to_solution(transaction)
             )
             self.assertTrue(response.json()['success'])
@@ -266,7 +267,7 @@ class Test(unittest.TestCase):
 
             ## submit t ransaction
             response = requests.post(
-                'http://127.0.0.1:5000/' + coconut_contract.contract_name 
+                'http://127.0.0.1:5000/' + coconut_contract.contract_name
                 + '/verify', json=transaction_to_solution(transaction)
             )
             self.assertTrue(response.json()['success'])

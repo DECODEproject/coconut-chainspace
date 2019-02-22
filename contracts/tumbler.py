@@ -1,4 +1,4 @@
-""" 
+"""
 	Coin tumbler.
 """
 
@@ -14,7 +14,8 @@ from petlib.ecdsa import do_ecdsa_sign, do_ecdsa_verify
 from petlib.bn import Bn
 # coconut
 from chainspacecontract.examples.utils import *
-from chainspacecontract.examples.tumbler_proofs import *
+from contracts.utils import *
+from contracts.tumbler_proofs import *
 from coconut.utils import *
 from coconut.scheme import *
 # chainspace
@@ -93,7 +94,7 @@ def create_tumbler_checker(inputs, reference_inputs, parameters, outputs, return
 
         # check format
         if len(inputs) != 1 or len(reference_inputs) != 0 or len(outputs) != 2 or len(returns) != 0:
-            return False 
+            return False
 
         # check types
         if loads(inputs[0])['type'] != 'TToken' or loads(outputs[0])['type'] != 'TToken': return False
@@ -129,10 +130,10 @@ def redeem_checker(inputs, reference_inputs, parameters, outputs, returns, depen
 
         # check format
         if len(inputs) != 1 or len(reference_inputs) != 0 or len(outputs) != 1 or len(returns) != 0:
-            return False 
+            return False
 
         # check types
-        if new_list['type'] != 'TList': return False      
+        if new_list['type'] != 'TList': return False
 
         # check fields
         if new_list['vk'] != new_list['vk']: return False
@@ -146,11 +147,11 @@ def redeem_checker(inputs, reference_inputs, parameters, outputs, returns, depen
         bp_params = setup(2)
         vk = unpack(new_list['vk'])
         if not verify_proof_tumbler(bp_params, vk, sig, kappa, nu, zeta, pi_tumbler, addr): return False
-  
+
         # otherwise
         return True
 
-    except (KeyError, Exception): 
+    except (KeyError, Exception):
         return False
 
 

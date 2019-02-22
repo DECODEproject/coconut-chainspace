@@ -12,7 +12,8 @@ from petlib.ecdsa import do_ecdsa_sign, do_ecdsa_verify
 from petlib.bn import Bn
 # coconut
 from chainspacecontract.examples.utils import *
-from chainspacecontract.examples.auction_proofs import *
+from contracts.auction_proofs import *
+from contracts.utils import *
 from coconut.utils import *
 from coconut.scheme import *
 # chainspace
@@ -39,11 +40,11 @@ def init():
 # ------------------------------------------------------------------
 @contract.method('create')
 def create(inputs, reference_inputs, parameters, aggr_vk, t_commit, t_reveal, uid, v0, ov0):
-    
+
     # commitment to the minim price
     (G, o, g1, hs, g2, e) = setup()
     cv0 = g1*v0 + hs[0]*ov0
-    
+
     # auction object
     auction = {
         'type' : 'Auction',
@@ -68,14 +69,14 @@ def create(inputs, reference_inputs, parameters, aggr_vk, t_commit, t_reveal, ui
 def commit(inputs, reference_inputs, parameters, seq, v, sigma):
     auction = loads(inputs[0])
     aggr_vk = unpack(auction['vk'])
-    
+
     # auction object
     bp_params = setup(2)
     private_m = [seq, v]
     (Theta, zeta) = make_proof_zeta(bp_params, aggr_vk, sigma, private_m)
     auction['list'].append(pack(zeta))
     #assert verify_proof_zeta(bp_params, aggr_vk, Theta, zeta)
-    
+
     # return
     return {
         'outputs': (dumps(auction),),
@@ -90,7 +91,7 @@ def reveal(inputs, reference_inputs, parameters, seq, sigma):
     auction = loads(inputs[0])
     aggr_vk = unpack(auction['vk'])
     v = loads(parameters[0])
-    
+
     # auction object
     bp_params = setup(2)
     private_m = [seq]
@@ -98,7 +99,7 @@ def reveal(inputs, reference_inputs, parameters, seq, sigma):
     #assert verify_proof_zeta(bp_params, aggr_vk, Theta, zeta, public_m=[v])
     packet = (v, pack(zeta))
     auction['list'] = [packet if x==pack(zeta) else x for x in auction['list']]
-    
+
     # return
     return {
         'outputs': (dumps(auction),),
@@ -114,7 +115,7 @@ def withdraw(inputs, reference_inputs, parameters, seq, sigma):
     aggr_vk = unpack(auction['vk'])
     v = loads(parameters[0])
     addr = unpack(parameters[1])
-    
+
     # auction object
     bp_params = setup(2)
     private_m = [seq]
@@ -139,7 +140,7 @@ def submitWork(inputs, reference_inputs, parameters, seq, sigma):
     aggr_vk = unpack(auction['vk'])
     v = loads(parameters[0])
     file_hash = unpack(parameters[1])
-    
+
     # auction object
     bp_params = setup(2)
     private_m = [seq]
@@ -147,7 +148,7 @@ def submitWork(inputs, reference_inputs, parameters, seq, sigma):
     (Theta, zeta) = make_proof_zeta(bp_params, aggr_vk, sigma, private_m, bind_m=bind_m)
     #assert verify_proof_zeta(bp_params, aggr_vk, Theta, zeta, public_m=[v], bind_m=bind_m)
     auction['file_hash'] = parameters[1]
-    
+
     # return
     return {
         'outputs': (dumps(auction),),
@@ -169,12 +170,12 @@ def create_checker(inputs, reference_inputs, parameters, outputs, returns, depen
 
         # check format
         if len(inputs) != 1 or len(reference_inputs) != 0 or len(outputs) != 2 or len(returns) != 0:
-            return False 
+            return False
 
         # check types
         if loads(inputs[0])['type'] != 'AToken' or loads(outputs[0])['type'] != 'AToken': return False
         if auction['type'] != 'Auction': return False
-        
+
         # check timestamps
         if auction['t_commit'] <= 0 or auction['t_commit'] >= auction['t_reveal']: return False
 
@@ -206,12 +207,12 @@ def commit_checker(inputs, reference_inputs, parameters, outputs, returns, depen
 
         # check format
         if len(inputs) != 1 or len(reference_inputs) != 0 or len(outputs) != 1 or len(returns) != 0:
-            return False 
-       
+            return False
+
         # check list
         if (zeta_packed in old_auction['list']) or (new_auction['list'] != old_auction['list'] + [zeta_packed]):
             return False
-        
+
         # check fields
         old_auction['list'], new_auction['list'] = None, None
         if old_auction != new_auction: return False
@@ -224,7 +225,7 @@ def commit_checker(inputs, reference_inputs, parameters, outputs, returns, depen
         # otherwise
         return True
 
-    except (KeyError, Exception): 
+    except (KeyError, Exception):
         return False
 
 # ------------------------------------------------------------------
@@ -244,7 +245,7 @@ def reveal_checker(inputs, reference_inputs, parameters, outputs, returns, depen
         # check format
         if len(inputs) != 1 or len(reference_inputs) != 0 or len(outputs) != 1 or len(returns) != 0:
             return False
-        
+
         # check list
         if zeta_packed not in old_auction['list']: return False
         packet = (v, zeta_packed)
@@ -253,7 +254,7 @@ def reveal_checker(inputs, reference_inputs, parameters, outputs, returns, depen
                 old_auction['list'][i] = list(packet)
                 break # ensure that only one element is modified
         if (new_auction['list'] != old_auction['list']): return False
-        
+
         # check fields
         old_auction['list'], new_auction['list'] = None, None
         if old_auction != new_auction: return False
@@ -284,11 +285,11 @@ def withdraw_checker(inputs, reference_inputs, parameters, outputs, returns, dep
         addr = unpack(parameters[1])
         Theta = unpack(parameters[2])
         zeta_packed = parameters[3]
-        
+
         # check format
         if len(inputs) != 1 or len(reference_inputs) != 0 or len(outputs) != 1 or len(returns) != 0:
             return False
-        
+
         # check list
         packet = (v, zeta_packed)
         if list(packet) not in old_auction['list']: return False
@@ -310,7 +311,7 @@ def withdraw_checker(inputs, reference_inputs, parameters, outputs, returns, dep
         bp_params = setup(2)
         zeta = unpack(zeta_packed)
         if not verify_proof_zeta(bp_params, vk, Theta, zeta, public_m=[v], bind_m=[addr]): return False
-        
+
         # otherwise
         return True
 
@@ -334,26 +335,26 @@ def submitWork_checker(inputs, reference_inputs, parameters, outputs, returns, d
 
         # check format
         if len(inputs) != 1 or len(reference_inputs) != 0 or len(outputs) != 1 or len(returns) != 0: return False
-        
+
         # check list
         if old_auction['file_hash'] != '': return False
         if new_auction['file_hash'] != file_hash_packed: return False
-        
+
         # only winner can submit file hash
         max_item = max([item for item in old_auction['list']]) # get first biggest item
         packet = (v, zeta_packed)
         if list(packet) != max_item: return False
-        
+
         # check fields
         old_auction['file_hash'], new_auction['file_hash'] = None, None
         if old_auction != new_auction: return False
-        
+
         # verify proof
         bp_params = setup(2)
         zeta = unpack(zeta_packed)
         file_hash = unpack(file_hash_packed)
         if not verify_proof_zeta(bp_params, vk, Theta, zeta, public_m=[v], bind_m=[file_hash]): return False
-        
+
         # otherwise
         return True
 
