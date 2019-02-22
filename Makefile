@@ -6,5 +6,9 @@ build-docker:
 bash-docker:
 	docker run -t -i decodeproject/chainspace-java-coconut-py-test:SNAPSHOT /bin/bash
 
+test: build-docker
+	docker run -t decodeproject/chainspace-java-coconut-py-test:SNAPSHOT
+
+
 # To connect it to an existing network try:
 # docker network connect [OPTIONS] NETWORK CONTAINER

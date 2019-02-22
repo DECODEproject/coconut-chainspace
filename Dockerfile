@@ -6,10 +6,9 @@ WORKDIR /app/coconut-contracts
 
 COPY contracts contracts
 COPY tests tests
+COPY run_tests.sh .
 
 
-
-
-
+CMD ./run_tests.sh
 
 

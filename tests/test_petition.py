@@ -56,6 +56,8 @@ class Test(unittest.TestCase):
             ## create transaction
             transaction = petition.init()
 
+            print "Hello im in a test!!"
+
             ## submit transaction
             response = requests.post(
                 'http://127.0.0.1:5000/' + petition_contract.contract_name
