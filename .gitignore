@@ -1,5 +1,6 @@
 # Remove macOS .DS_Store
 .DS_Store
+*.iml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
