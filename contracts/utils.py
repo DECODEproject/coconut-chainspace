@@ -1,4 +1,3 @@
-from bplib.bp import G2Elem, G1Elem
 from petlib.ec import EcGroup
 from petlib.pack import encode, decode
 from binascii import hexlify, unhexlify
@@ -15,5 +14,5 @@ def pack(x):
 
 def unpack(x):
     if x is None:
-        return x 
+        return x
     return decode(unhexlify(x))

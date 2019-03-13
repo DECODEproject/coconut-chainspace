@@ -1,4 +1,4 @@
-""" test authenticated bank transfer """
+""" test coconut petition """
 
 ####################################################################
 # imports
@@ -55,8 +55,6 @@ class Test(unittest.TestCase):
         with petition_contract.test_service():
             ## create transaction
             transaction = petition.init()
-
-            print "Hello im in a test!!"
 
             ## submit transaction
             response = requests.post(
