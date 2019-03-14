@@ -19,6 +19,7 @@ from contracts import petition
 from contracts.petition import contract as petition_contract
 from contracts.utils import *
 
+debug = 0
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -179,7 +180,9 @@ def pp_object(obj):
 def post_transaction(transaction, path):
     transaction = csc.transaction_inline_objects(transaction)
     print("Posting transaction to " + path)
-    pp_object(transaction)
+    if debug == 1:
+        pp_object(transaction)
+
     response = requests.post(
         'http://127.0.0.1:5000/'
         + petition_contract.contract_name
@@ -189,6 +192,25 @@ def post_transaction(transaction, path):
 
 
 print("\n======== EXECUTING PETITION =========\n")
+
+
+def sign_petition_crypto():
+    global d, gamma, private_m, Lambda, ski, sigs_tilde, sigma_tilde, sigs, sigma
+    # some crypto to get the credentials
+    # ------------------------------------
+    # This can be done with zencode "I create my new credential keypair"
+    # Keypair for signer
+    (d, gamma) = cs.elgamal_keygen(bp_params)
+    private_m = [d]  # array containing the private attributes, in this case the private key
+    Lambda = cs.prepare_blind_sign(bp_params, gamma, private_m)  # signer prepares a blind signature request from their private key
+    # This would be done by the authority
+    sigs_tilde = [cs.blind_sign(bp_params, ski, gamma, Lambda) for ski in sk]  # blind sign from each authority
+    # back with the signer, unblind all the signatures, using the private key
+    sigs = [cs.unblind(bp_params, sigma_tilde, d) for sigma_tilde in sigs_tilde]
+    # aggregate all the credentials
+    sigma = cs.agg_cred(bp_params, sigs)
+    return (sigma, d)
+
 
 with petition_contract.test_service():
     print("\npetition.init()")
@@ -216,39 +238,57 @@ with petition_contract.test_service():
     old_petition = create_transaction['transaction']['outputs'][1]
     old_list = create_transaction['transaction']['outputs'][2]
 
-    # some crypto to get the credentials
-    # ------------------------------------
-    # This can be done with zencode "I create my new credential keypair"
+    for i in range(3):
+        print("\npetition.sign() [" + str(i) + "]")
 
-    # Keypair for signer
-    (d, gamma) = cs.elgamal_keygen(bp_params)
-    private_m = [d] # array containing the private attributes, in this case the private key
+        (sigma, d) = sign_petition_crypto()
 
-    Lambda = cs.prepare_blind_sign(bp_params, gamma, private_m) # signer prepares a blind signature request from their private key
+        print("\nAggregated credentials (sigma): " + str(sigma))
+        # ------------------------------------
 
-    # This would be done by the authority
-    sigs_tilde = [cs.blind_sign(bp_params, ski, gamma, Lambda) for ski in sk]  # blind sign from each authority
+        print("\npetition.sign()")
+        sign_transaction = petition.sign(
+            (old_petition, old_list),
+            None,
+            None,
+            d,
+            sigma,
+            aggr_vk,
+            1
+        )
 
-    # back with the signer, unblind all the signatures, using the private key
-    sigs = [cs.unblind(bp_params, sigma_tilde, d) for sigma_tilde in sigs_tilde]
+        post_transaction(sign_transaction, "/sign")
 
-    # aggregate all the credentials
-    sigma = cs.agg_cred(bp_params, sigs)
+        old_petition = sign_transaction['transaction']['outputs'][0]
+        old_list = sign_transaction['transaction']['outputs'][1]
 
-    print("\nAggregated credentials (sigma): " + str(sigma))
-    # ------------------------------------
 
-    print("\npetition.sign()")
-    sign_transaction = petition.sign(
-        (old_petition, old_list),
+    # tally
+    for i in range(t_owners):
+        tally_transaction = petition.tally(
+            (old_petition,),
+            None,
+            None,
+            sk_owners[i],
+            i,
+            t_owners
+        )
+
+        post_transaction(tally_transaction, "/tally")
+
+        old_petition = tally_transaction['transaction']['outputs'][0]
+
+    # read
+    read_transaction = petition.read(
         None,
-        None,
-        d,
-        sigma,
-        aggr_vk,
-        1
+        (old_petition,),
+        None
     )
 
-    post_transaction(sign_transaction, "/sign")
+    post_transaction(read_transaction, "/read")
 
+
+    print("\n\n==================== OUTCOME ====================\n")
+    print('OUTCOME: ', json.loads(read_transaction['transaction']['returns'][0]))
+    print("\n===================================================\n\n")
 
